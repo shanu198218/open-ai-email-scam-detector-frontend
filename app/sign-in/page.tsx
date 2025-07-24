@@ -1,5 +1,4 @@
 import SignInPage from "@/components/pages/sign-in";
-import Image from "next/image";
 
 export default function SignIn() {
   return (
