@@ -85,3 +85,11 @@ export const checkAuth = async () => {
     return false;
   }
 };
+
+export async function getCurrentUser() {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return res.json(); // { id, email, name }
+}

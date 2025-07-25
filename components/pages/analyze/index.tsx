@@ -1,10 +1,54 @@
+"use client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import { exampleScamEmail } from "@/lib/data";
+import { analyzeScamEmail } from "@/services/analyze";
 import { AlertTriangle } from "lucide-react";
+import { useState } from "react";
 
 export default function Analyze() {
+  const [text, setText] = useState("");
+  const [result, setResult] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const CHARACTER_LIMIT = 200;
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (e.target.value.length <= CHARACTER_LIMIT) {
+      setText(e.target.value);
+    } else {
+      toast({
+        title: "Limit reached",
+        description: `You can only enter up to the ${CHARACTER_LIMIT} characters`,
+        variant: "success",
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(false);
+
+    try {
+      const output = await analyzeScamEmail(text);
+      setResult(output);
+
+      toast({
+        title: "successfully scan",
+        variant: "success",
+      });
+    } catch (err: any) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetButton = () => {
+    setText("");
+  };
   return (
     <div className="min-h-screen  items-center justify-center bg-white px-10 py-8">
       <div className="max-w-4xl mx-auto">
@@ -29,21 +73,28 @@ export default function Analyze() {
             </label>
             <Textarea
               id="email-input"
+              value={text}
+              onChange={handleChange}
               placeholder="Paste the full email content or subject here..."
               rows={40}
               className="resize-none h-56 mt-2"
             />
             <div className="md:flex md:justify-between md:items-center grid mt-2">
               <p className="text-sm text-muted-foreground">
-                character (minimum 20 required)
+                {text.length} / {CHARACTER_LIMIT} character (minimum 200
+                required)
               </p>
               <div className="flex gap-4 md:mt-auto mt-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  onClick={() => setText(exampleScamEmail)}
+                  variant="outline"
+                  size="sm"
+                >
                   <i className="ri-file-text-line text-black text-2xl"></i> Load
                   Example{" "}
                 </Button>
 
-                <Button variant="outline" size="sm">
+                <Button onClick={resetButton} variant="outline" size="sm">
                   <i className="ri-delete-bin-line text-2xl text-red-600"></i>
                   <span className="text-red-600">Clear</span>
                 </Button>
@@ -51,9 +102,29 @@ export default function Analyze() {
             </div>
           </div>
 
-          <Button className="w-full bg-blue-500 hover:bg-blue-200">
-            Check mail
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-blue-500 hover:bg-blue-200"
+          >
+            {loading ? "Scanning..." : "Scan Email"}
           </Button>
+          {result && (
+            <Card className="mt-4 border p-4 rounded">
+              <h2
+                className={`font-bold ${
+                  result.risk === "Safe" ? "text-blue-600" : "text-red-600"
+                }`}
+              >
+                Risk: {result.risk}
+              </h2>
+              <p>
+                <strong>Reason:</strong> {result.reason}
+              </p>
+              <p>
+                <strong>Action:</strong> {result.action}
+              </p>
+            </Card>
+          )}
         </CardContent>
       </Card>
 

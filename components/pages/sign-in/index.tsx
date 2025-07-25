@@ -11,11 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
-
 import { loginUser, registerUser } from "@/services/auth";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { useState } from "react";
 
 interface SignUpPageProps {
@@ -45,7 +42,7 @@ export default function SignInPage({ signUp = false }: SignUpPageProps) {
         description: `Welcome ${mode === "sign-in" ? "" : name}  `,
       });
       console.log(data);
-      router.push("/");
+      router.push(mode === "sign-in" ? "/" : "/sign-in");
     } catch (err: any) {
       console.error(err);
       console.log("error", err);
