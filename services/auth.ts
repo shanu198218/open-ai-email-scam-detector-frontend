@@ -65,3 +65,23 @@ export const logoutUser = async () => {
     credentials: "include",
   });
 };
+
+export const checkAuth = async () => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/check-auth`,
+      {
+        method: "GET",
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+};
