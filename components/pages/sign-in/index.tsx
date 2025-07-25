@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,7 +10,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
+
+import { loginUser, registerUser } from "@/services/auth";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useState } from "react";
 
 interface SignUpPageProps {
   signUp: boolean;
@@ -17,6 +24,33 @@ interface SignUpPageProps {
 
 export default function SignInPage({ signUp = false }: SignUpPageProps) {
   const mode = signUp ? "sign-up" : "sign-in";
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const data =
+        mode === "sign-in"
+          ? await loginUser(email, password)
+          : await registerUser(name, email, password);
+
+      toast({
+        title:
+          mode === "sign-in" ? "Login successful" : "Registration successful",
+        variant: "success",
+        description: `Welcome ${mode === "sign-in" ? "" : name}  `,
+      });
+      console.log(data);
+      router.push("/");
+    } catch (err: any) {
+      console.error(err);
+      console.log("error", err);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -50,12 +84,14 @@ export default function SignInPage({ signUp = false }: SignUpPageProps) {
               </span>
             </div>
           </div>
-          <form className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "sign-up" && (
               <div className="space-y-2">
                 <Label htmlFor="email"> Name</Label>
                 <Input
                   id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   type="text"
                   placeholder="Enter your name"
                   required
@@ -68,6 +104,8 @@ export default function SignInPage({ signUp = false }: SignUpPageProps) {
               <Label htmlFor="email"> Email</Label>
               <Input
                 id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 placeholder="Enter your email"
                 required
@@ -78,6 +116,8 @@ export default function SignInPage({ signUp = false }: SignUpPageProps) {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 placeholder="Enter your password"
                 required
